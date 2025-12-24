@@ -14,6 +14,16 @@ const TMP_ROOT = path.join(__dirname, 'tmp');
 mkdirp.sync(TMP_ROOT);
 app.use('/tmp', express.static(TMP_ROOT));
 
+// Respond to .well-known requests (some devtools/extensions probe this)
+app.get('/.well-known/appspecific/com.chrome.devtools.json', (req, res) => {
+  return res.json({ ok: true });
+});
+
+// Generic handler for other .well-known paths to avoid 404 noise
+app.get('/.well-known/*', (req, res) => {
+  return res.status(200).json({ ok: true, path: req.path });
+});
+
 function downloadFile(url, dest) {
   return new Promise((resolve, reject) => {
     fetch(url).then(res => {
